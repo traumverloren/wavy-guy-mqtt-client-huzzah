@@ -2,7 +2,8 @@
 #include <MQTTClient.h>
 #include "arduino_secrets.h" 
 
-#define PIN         2
+// constants won't change
+const int RELAY_PIN = 13;  // the Arduino pin, which connects to the SIGNAL pin of relay
 
 const char ssid[] = SECRET_SSID;
 const char pass[] = SECRET_PASS;
@@ -22,6 +23,9 @@ void setup() {
   client.onMessage(messageReceived);
 
   connect();
+
+  // initialize digital pin as an output.
+  pinMode(RELAY_PIN, OUTPUT);
 }
 
 void connect() {
@@ -50,7 +54,13 @@ void messageReceived(String &topic, String &payload) {
 
 void loop() {
   client.loop();
-  delay(10);  // <- fixes some issues with WiFi stability
+  //  delay(10);  // <- fixes some issues with WiFi stability
+
+  // Test out the relay
+  digitalWrite(RELAY_PIN, HIGH);
+  delay(2000);
+  digitalWrite(RELAY_PIN, LOW);
+  delay(2000);
 
   if (!client.connected()) {
     connect();
