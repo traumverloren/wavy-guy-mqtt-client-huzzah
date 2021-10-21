@@ -8,6 +8,8 @@ const int RELAY_PIN = 13;  // the Arduino pin, which connects to the SIGNAL pin 
 const char ssid[] = SECRET_SSID;
 const char pass[] = SECRET_PASS;
 
+bool isWavyTriggered = false;
+
 WiFiClient net;
 MQTTClient client;
 
@@ -46,23 +48,28 @@ void connect() {
 }
 
 void messageReceived(String &topic, String &payload) {
-  const char* delimiter = ",";
-  String incomingMode = payload.substring(0,payload.indexOf(delimiter));
   Serial.println("topic: " + topic);
-  Serial.println("payload: " + incomingMode);
+  Serial.println("payload: " + payload);
+
+  triggerWavy();
+}
+
+void triggerWavy() {
+  isWavyTriggered = true;
 }
 
 void loop() {
   client.loop();
   //  delay(10);  // <- fixes some issues with WiFi stability
 
-  // Test out the relay
-  digitalWrite(RELAY_PIN, HIGH);
-  delay(2000);
-  digitalWrite(RELAY_PIN, LOW);
-  delay(2000);
-
   if (!client.connected()) {
     connect();
+  }
+
+  if (isWavyTriggered) {
+    digitalWrite(RELAY_PIN, HIGH);
+    delay(2000);
+    digitalWrite(RELAY_PIN, LOW);
+    isWavyTriggered = false;
   }
 }
